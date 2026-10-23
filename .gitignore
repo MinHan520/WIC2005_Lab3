@@ -1,2 +1,4 @@
 .DS_Store
 __pycache__/
+# course instructions, kept locally only
+Lab.md

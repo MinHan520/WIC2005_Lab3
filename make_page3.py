@@ -9,7 +9,7 @@ so a network with a loop or a missing route never gets published, then writes
 docs/index.html with your network, your evidence (evidence3/) and your answers
 (page3.yaml). GitHub Pages publishes it at https://minhan520.github.io/WIC2005_Lab3/ (its own repository)
 
-One part is yours to write: routing_tables_section(). Look for TODO.
+One part was mine to write: routing_tables_section().
 """
 import datetime
 import html
