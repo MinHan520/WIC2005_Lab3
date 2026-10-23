@@ -1,36 +1,79 @@
-# network.yaml: your routed network, as data. A starting point to change into your own design.
+# network.yaml: my routed network, as data. NN = 16, NNNN = 5016 (see "Your addresses").
 #
 #   python3 build_routed.py network.yaml      checks it, then builds it in Mininet
 #   python3 make_page3.py network.yaml        checks it, then writes docs/week3/index.html
 #
-# Replace NNNN and every NN (see "Your addresses"). Don't put your full student ID here.
-#
 # Each LAN has one router (.1 on the LAN) and one host (.10).
 # On each link, the first router named is .1 and the second is .2.
-# This starting point is the lab's network without r3. It works, but it doesn't meet the
-# assignment's requirements: that's your job.
+#
+# Design: a small campus. Four routers in a ring, r1 - r2 - r3 - r4 - r1, so every pair of
+# routers has two ways to reach each other (the redundant path). Two "office" LANs hang off
+# r1 and r2, two "lab" LANs off r3 and r4.
+#
+#        h1 (admin)              h2 (library)
+#          |                       |
+#          r1 ------ 100.0/30 ---- r2
+#          |                       |
+#      100.12/30               100.4/30
+#          |                       |
+#          r4 ------ 100.8/30 ---- r3
+#          |                       |
+#        h4 (lab-b)              h3 (lab-a)
+#
+# Address plan, all inside my block 10.16.0.0/16:
+#   10.16.0.0/22    office LANs:  admin 10.16.1.0/24, library 10.16.2.0/24
+#   10.16.48.0/20   lab LANs:     lab-a 10.16.48.0/24, lab-b 10.16.52.0/24
+#   10.16.100.0/24  router-to-router links, cut into /30s
+# Each group sits inside one prefix on purpose, so one summary route can stand for it:
+# r1 and r2 reach both lab LANs with 10.16.48.0/20; r3 and r4 reach both office LANs
+# with 10.16.0.0/22. Neither summary covers all four LANs.
 
-student_id_last4: "NNNN"
+student_id_last4: "5016"
 
-routers: [r1, r2]
+routers: [r1, r2, r3, r4]
 
 lans:
-  - name: lan-h1
-    network: 10.NN.1.0/24
+  - name: admin
+    network: 10.16.1.0/24
     router: r1
     host: h1
-  - name: lan-h2
-    network: 10.NN.32.0/24
+  - name: library
+    network: 10.16.2.0/24
     router: r2
     host: h2
+  - name: lab-a
+    network: 10.16.48.0/24
+    router: r3
+    host: h3
+  - name: lab-b
+    network: 10.16.52.0/24
+    router: r4
+    host: h4
 
 links:
-  - [r1, r2, 10.NN.12.0/30]
+  - [r1, r2, 10.16.100.0/30]   # r1 .1, r2 .2
+  - [r2, r3, 10.16.100.4/30]   # r2 .5, r3 .6
+  - [r3, r4, 10.16.100.8/30]   # r3 .9, r4 .10
+  - [r4, r1, 10.16.100.12/30]  # r4 .13, r1 .14
 
 routes:
   r1:
-    - to: 10.NN.32.0/24
-      via: 10.NN.12.2
+    - to: 10.16.2.0/24         # library, next door
+      via: 10.16.100.2         # r2
+    - to: 10.16.48.0/20        # summary: lab-a and lab-b
+      via: 10.16.100.13        # r4
   r2:
-    - to: 10.NN.1.0/24
-      via: 10.NN.12.1
+    - to: 10.16.1.0/24         # admin, next door
+      via: 10.16.100.1         # r1
+    - to: 10.16.48.0/20        # summary: lab-a and lab-b
+      via: 10.16.100.6         # r3
+  r3:
+    - to: 10.16.52.0/24        # lab-b, next door
+      via: 10.16.100.10        # r4
+    - to: 10.16.0.0/22         # summary: admin and library
+      via: 10.16.100.5         # r2
+  r4:
+    - to: 10.16.48.0/24        # lab-a, next door
+      via: 10.16.100.9         # r3
+    - to: 10.16.0.0/22         # summary: admin and library
+      via: 10.16.100.14        # r1
