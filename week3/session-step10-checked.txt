@@ -1,0 +1,60 @@
+*** Error setting resource limits. Mininet's performance may be affected.
+*** Configuring hosts
+r1 r2 r3 h1 h2 h3 
+*** Starting controller
+
+*** Starting 0 switches
+
+*** Starting CLI:
+
+Your networks (student ID ending 5016):
+  h1's LAN    10.16.1.0/24   fd00:5016:1::/64   h1 .10 / ::10, r1 .1 / ::1
+  r1-r2 link  10.16.12.0/30   fd00:5016:12::/64   r1 .1 / ::1, r2 .2 / ::2
+  r1-r3 link  10.16.13.0/30   fd00:5016:13::/64   r1 .1 / ::1, r3 .2 / ::2
+  r3-r2 link  10.16.23.0/30   fd00:5016:23::/64   r3 .1 / ::1, r2 .2 / ::2
+  h2's LAN    10.16.32.0/24   fd00:5016:32::/64   r2 .1 / ::1, h2 .10 / ::10
+  h3's LAN    10.16.33.0/24   fd00:5016:33::/64   r2 .1 / ::1, h3 .10 / ::10
+
+Applying routes.yaml:
+r1 sysctl -w net.ipv4.ip_forward=1
+r1 ip route add 10.16.32.0/24 via 10.16.12.2
+r1 ip route add 10.16.32.0/20 via 10.16.13.2
+r2 sysctl -w net.ipv4.ip_forward=1
+r2 ip route add 10.16.1.0/24 via 10.16.12.1
+r3 sysctl -w net.ipv4.ip_forward=1
+r3 ip route add 10.16.32.0/20 via 10.16.23.2
+r3 ip route add 10.16.1.0/24 via 10.16.13.1
+
+mininet> mininet> h1 ping -c 2 10.16.32.10
+mininet> PING 10.16.32.10 (10.16.32.10) 56(84) bytes of data.
+64 bytes from 10.16.32.10: icmp_seq=1 ttl=62 time=0.116 ms
+64 bytes from 10.16.32.10: icmp_seq=2 ttl=62 time=0.063 ms
+
+--- 10.16.32.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1031ms
+rtt min/avg/max/mdev = 0.063/0.089/0.116/0.026 ms
+mininet> mininet> h1 ping -c 2 10.16.33.10
+mininet> PING 10.16.33.10 (10.16.33.10) 56(84) bytes of data.
+64 bytes from 10.16.33.10: icmp_seq=1 ttl=62 time=0.092 ms
+64 bytes from 10.16.33.10: icmp_seq=2 ttl=62 time=0.129 ms
+
+--- 10.16.33.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1020ms
+rtt min/avg/max/mdev = 0.092/0.110/0.129/0.018 ms
+mininet> mininet> h2 ping -c 2 10.16.33.10
+mininet> PING 10.16.33.10 (10.16.33.10) 56(84) bytes of data.
+64 bytes from 10.16.33.10: icmp_seq=1 ttl=63 time=0.033 ms
+64 bytes from 10.16.33.10: icmp_seq=2 ttl=63 time=0.111 ms
+
+--- 10.16.33.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1021ms
+rtt min/avg/max/mdev = 0.033/0.072/0.111/0.039 ms
+mininet> *** Stopping 0 controllers
+
+*** Stopping 6 links
+......
+*** Stopping 0 switches
+
+*** Stopping 6 hosts
+r1 r2 r3 h1 h2 h3 
+*** Done
