@@ -2,18 +2,41 @@
 # A few sentences each, in your own words, about YOUR network and YOUR evidence.
 # Leave a blank line between paragraphs. Never put your name or full student ID here.
 
-repository: https://github.com/YOUR-USERNAME/YOUR-REPOSITORY
+repository: https://github.com/MinHan520/WIC2005_Lab2
 
 answers:
   design:
     question: "Describe your design: why these routers, LANs and links, and how you chose the addresses."
-    answer: ""
+    answer: |
+      My network is a small campus: four routers joined in a ring, r1 - r2 - r3 - r4 - r1, with one LAN and one host on each router. The two "office" LANs are admin (h1 on r1) and library (h2 on r2); the two "lab" LANs are lab-a (h3 on r3) and lab-b (h4 on r4). I chose a ring because it is the smallest shape with four routers where every pair of routers has two separate ways to reach each other, so there is a redundant path around any single link.
+
+      I planned the addresses before writing any route, all inside my block 10.16.0.0/16. The office LANs are 10.16.1.0/24 and 10.16.2.0/24, which both sit inside 10.16.0.0/22. The lab LANs are 10.16.48.0/24 and 10.16.52.0/24, which both sit inside 10.16.48.0/20 (48 is 0011 0000 and 52 is 0011 0100, so the first 20 bits are the same). The four router links are /30s cut from 10.16.100.0/24: a /30 has exactly two usable addresses, one for each router, and keeping the links at 100 means no summary ever swallows a link by accident.
+
+      Each router has two static routes: a /24 to the LAN on the neighbour beside it, and a summary for the two LANs on the far side of the ring. For the diagonal pairs I sent each direction a different way, so the paths are asymmetric. traces.txt shows h1 to h3 going r1 -> r4 -> r3, but hop 3 prints 10.16.100.6, r3's address on the r2 - r3 link, not 10.16.100.9 on the link the packet came in on. That is because r3's reply goes back to h1 using its 10.16.0.0/22 route via r2, so it leaves, and is stamped with, the r2 - r3 interface.
+
   summary:
     question: "Which route summarises several LANs? Which networks does it cover, why is it correct, and what else would it attract if you added a network inside its range?"
-    answer: ""
+    answer: |
+      I have two summaries. 10.16.48.0/20 on r1 (via r4) and r2 (via r3) covers 10.16.48.0 to 10.16.63.255, so it covers lab-a (10.16.48.0/24) and lab-b (10.16.52.0/24). 10.16.0.0/22 on r3 (via r2) and r4 (via r1) covers 10.16.0.0 to 10.16.3.255, so it covers admin (10.16.1.0/24) and library (10.16.2.0/24). Neither covers all four LANs, and neither covers a link, which are all in 10.16.100.0/24.
+
+      They are correct because the next hop of each summary is a router that knows both covered LANs specifically. In summary.txt, r1 sends 10.16.48.10 and 10.16.52.10 to the same next hop, 10.16.100.13 (r4) on r1-eth2; r4 has lab-b directly connected and a /24 for lab-a via r3, so both arrive. In the same way r4 sends 10.16.1.10 and 10.16.2.10 to 10.16.100.14 (r1), which has admin connected and a /24 for library. check_paths() followed all 12 host pairs and found no loop or gap, and pingall.txt shows all 12 with 0% loss.
+
+      A summary attracts every address in its range, not only the LANs I meant. If I added a new LAN at 10.16.56.0/24 on r2, r2 would deliver it locally (its connected /24 is longer, so it wins), but r1's /20 would still send that traffic to r4. r4 has no route for 10.16.56.0, so it would answer Network Unreachable and the traffic would be black-holed until I added a more specific /24 on r1 pointing at r2. It also attracts addresses nobody uses: a packet to 10.16.60.1 travels from r1 to r4 before being dropped there.
+
   failure:
     question: "When you took a link down, what happened, and why couldn't your routes recover even though another path existed? What would have recovered?"
-    answer: ""
+    answer: |
+      I took down the r1 - r4 link (10.16.100.12/30), which carries h1's traffic to the labs. In failure.txt the trace from h1 to h3 stops at hop 1, 10.16.1.1 (r1), with !N, and r1 ip route get 10.16.48.10 answers "Network is unreachable". When r1-eth2 went down the kernel deleted the connected 10.16.100.12/30 route and my static 10.16.48.0/20 route through 10.16.100.13 with it, so r1 had no route to the labs at all (session.txt shows r1 left with only three routes). r4 lost its 10.16.0.0/22 route in the same way.
+
+      Another path existed: r1 -> r2 -> r3. r2 even has its own /20 to the labs via r3, and h2 could still ping h3 while the link was down. But static routes don't change themselves: r1 had exactly one route to 10.16.48.0/20, nothing told it about the failure, and nothing worked out an alternative. Even after link r1 r4 up, only the connected /30 came back; the static routes stayed deleted and h1 still got Destination Net Unreachable for h3 (session.txt), until someone typed them again.
+
+      A dynamic routing protocol such as OSPF would have recovered: the routers would notice the dead neighbour, flood the change, recompute shortest paths, and r1 would send lab traffic via r2 (and r4 office traffic via r3) within seconds, then move back when the link returned. Without a protocol, a floating static route would also work, for example ip route add 10.16.48.0/20 via 10.16.100.2 metric 100 on r1, a backup that is only used once the preferred route disappears.
+
   control_plane:
     question: "In your network, what was the control plane? Who worked out the routes, and what does that mean for a network of 40 routers?"
-    answer: ""
+    answer: |
+      The control plane was me. I decided all eight static routes and wrote them in network.yaml; build_routed.py only installed my decisions, and my check_paths() only verified them before they reached a router. The routers did the data plane: a longest-prefix match on every packet against the tables I gave them. Unlike the Week 1 switch, which learned MAC addresses by itself, my routers learned nothing on their own, which is why the failure test could not heal itself.
+
+      A human control plane also misses things. Mininet's pingall in session.txt shows every host reaching every host, but 8 of its 56 pings fail, all of them from a router to the far side of the ring (r1 cannot ping r3 or h3, for example). A router sends its own pings from its link address, such as 10.16.100.14, and I only routed the LANs, not the /30 links, so the replies have no route back. check_paths() only checks host-to-host paths, so it passed this.
+
+      With 40 routers this approach does not scale. Every router needs a route to every LAN, so that means hundreds of hand-written routes, and every link failure needs several routers changed by hand, quickly and without a typo. Summaries keep the tables smaller, but a real network of 40 routers would use a routing protocol such as OSPF, or a central controller, to compute the tables. The intent would still be kept as data and checked automatically, as with network.yaml and check_paths(), before any change is deployed.
