@@ -6,8 +6,8 @@ Run it inside the lab container, from your netlab folder:
 
 It checks network.yaml with the same checks as build_routed.py (including your check_paths()),
 so a network with a loop or a missing route never gets published, then writes
-docs/week3/index.html with your network, your evidence (evidence3/) and your answers
-(page3.yaml). GitHub Pages publishes it at https://<you>.github.io/<repository>/week3/
+docs/index.html with your network, your evidence (evidence3/) and your answers
+(page3.yaml). GitHub Pages publishes it at https://minhan520.github.io/WIC2005_Lab3/ (its own repository)
 
 One part is yours to write: routing_tables_section(). Look for TODO.
 """
@@ -143,7 +143,7 @@ PAGE = """<!doctype html>
 </style>
 </head>
 <body>
-<p class="meta"><a href="../">← Week 2: my network, built from data</a></p>
+<p class="meta"><a href="https://minhan520.github.io/WIC2005_Lab2/">← Week 2: my network, built from data</a></p>
 <h1>My routed network, from data</h1>
 <p class="meta">Student ID ending {last4} · generated from <code>{source}</code> by <code>make_page3.py</code> on {today}</p>
 <p id="summary">{n_routers} routers, {n_lans} LANs and {n_links} router links, with {n_routes} static routes, on <code>{v4_block}</code>.
@@ -193,8 +193,8 @@ def main():
     with open("page3.yaml") as f:
         page = yaml.safe_load(f)
     last4 = str(spec["student_id_last4"])
-    os.makedirs("docs/week3", exist_ok=True)
-    with open("docs/week3/index.html", "w") as f:
+    os.makedirs("docs", exist_ok=True)
+    with open("docs/index.html", "w") as f:
         f.write(
             PAGE.format(
                 last4=esc(last4),
@@ -215,7 +215,7 @@ def main():
                 data=json.dumps(spec, indent=2).replace("</", "<\\/"),
             )
         )
-    print("Wrote docs/week3/index.html")
+    print("Wrote docs/index.html")
 
 
 if __name__ == "__main__":
