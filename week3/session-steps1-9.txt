@@ -1,0 +1,187 @@
+*** Error setting resource limits. Mininet's performance may be affected.
+*** Configuring hosts
+r1 r2 r3 h1 h2 h3 
+*** Starting controller
+
+*** Starting 0 switches
+
+*** Starting CLI:
+
+Your networks (student ID ending 5016):
+  h1's LAN    10.16.1.0/24   fd00:5016:1::/64   h1 .10 / ::10, r1 .1 / ::1
+  r1-r2 link  10.16.12.0/30   fd00:5016:12::/64   r1 .1 / ::1, r2 .2 / ::2
+  r1-r3 link  10.16.13.0/30   fd00:5016:13::/64   r1 .1 / ::1, r3 .2 / ::2
+  r3-r2 link  10.16.23.0/30   fd00:5016:23::/64   r3 .1 / ::1, r2 .2 / ::2
+  h2's LAN    10.16.32.0/24   fd00:5016:32::/64   r2 .1 / ::1, h2 .10 / ::10
+  h3's LAN    10.16.33.0/24   fd00:5016:33::/64   r2 .1 / ::1, h3 .10 / ::10
+
+mininet> mininet> h1 ping -c 2 10.16.1.1
+mininet> PING 10.16.1.1 (10.16.1.1) 56(84) bytes of data.
+64 bytes from 10.16.1.1: icmp_seq=1 ttl=64 time=0.188 ms
+64 bytes from 10.16.1.1: icmp_seq=2 ttl=64 time=0.071 ms
+
+--- 10.16.1.1 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1026ms
+rtt min/avg/max/mdev = 0.071/0.129/0.188/0.058 ms
+mininet> mininet> h1 ping -c 2 10.16.32.10
+mininet> PING 10.16.32.10 (10.16.32.10) 56(84) bytes of data.
+mininet> 
+--- 10.16.32.10 ping statistics ---
+2 packets transmitted, 0 received, 100% packet loss, time 1020ms
+
+mininet> r1 ip route
+mininet> 10.16.1.0/24 dev r1-eth0 proto kernel scope link src 10.16.1.1 
+10.16.12.0/30 dev r1-eth1 proto kernel scope link src 10.16.12.1 
+10.16.13.0/30 dev r1-eth2 proto kernel scope link src 10.16.13.1 
+mininet> mininet> r2 ip route
+mininet> 10.16.12.0/30 dev r2-eth0 proto kernel scope link src 10.16.12.2 
+10.16.23.0/30 dev r2-eth1 proto kernel scope link src 10.16.23.2 
+10.16.32.0/24 dev r2-eth2 proto kernel scope link src 10.16.32.1 
+10.16.33.0/24 dev r2-eth3 proto kernel scope link src 10.16.33.1 
+mininet> mininet> r1 sysctl net.ipv4.ip_forward
+mininet> net.ipv4.ip_forward = 0
+mininet> mininet> r1 ip route > week3/r1-routes-before.txt
+mininet> mininet> mininet> r1 sysctl -w net.ipv4.ip_forward=1
+mininet> net.ipv4.ip_forward = 1
+mininet> mininet> r2 sysctl -w net.ipv4.ip_forward=1
+mininet> net.ipv4.ip_forward = 1
+mininet> mininet> r3 sysctl -w net.ipv4.ip_forward=1
+mininet> net.ipv4.ip_forward = 1
+mininet> mininet> h1 ping -c 2 10.16.32.10
+mininet> PING 10.16.32.10 (10.16.32.10) 56(84) bytes of data.
+From 10.16.1.1 icmp_seq=1 Destination Net Unreachable
+From 10.16.1.1 icmp_seq=2 Destination Net Unreachable
+
+--- 10.16.32.10 ping statistics ---
+2 packets transmitted, 0 received, +2 errors, 100% packet loss, time 1043ms
+
+mininet> mininet> r1 ip route add 10.16.32.0/24 via 10.16.12.2
+mininet> mininet> mininet> r1 ip route add 10.16.32.0/20 via 10.16.13.2
+mininet> mininet> mininet> r3 ip route add 10.16.32.0/20 via 10.16.23.2
+mininet> mininet> mininet> r3 ip route add 10.16.1.0/24 via 10.16.13.1
+mininet> mininet> mininet> r2 ip route add 10.16.1.0/24 via 10.16.12.1
+mininet> mininet> mininet> h1 ping -c 2 10.16.32.10
+mininet> PING 10.16.32.10 (10.16.32.10) 56(84) bytes of data.
+64 bytes from 10.16.32.10: icmp_seq=1 ttl=62 time=0.131 ms
+64 bytes from 10.16.32.10: icmp_seq=2 ttl=62 time=0.062 ms
+
+--- 10.16.32.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1012ms
+rtt min/avg/max/mdev = 0.062/0.096/0.131/0.034 ms
+mininet> mininet> h1 ping -c 2 10.16.33.10
+mininet> PING 10.16.33.10 (10.16.33.10) 56(84) bytes of data.
+64 bytes from 10.16.33.10: icmp_seq=1 ttl=62 time=0.141 ms
+64 bytes from 10.16.33.10: icmp_seq=2 ttl=62 time=0.091 ms
+
+--- 10.16.33.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1021ms
+rtt min/avg/max/mdev = 0.091/0.116/0.141/0.025 ms
+mininet> mininet> r1 ip route get 10.16.32.10
+mininet> 10.16.32.10 via 10.16.12.2 dev r1-eth1 src 10.16.12.1 uid 0 
+    cache 
+mininet> mininet> r1 ip route get 10.16.33.10
+mininet> 10.16.33.10 via 10.16.13.2 dev r1-eth2 src 10.16.13.1 uid 0 
+    cache 
+mininet> mininet> r1 ip route get 10.16.40.1
+mininet> 10.16.40.1 via 10.16.13.2 dev r1-eth2 src 10.16.13.1 uid 0 
+    cache 
+mininet> mininet> r1 ip route get 10.16.32.10 > week3/lpm.txt
+mininet> mininet> mininet> r1 ip route get 10.16.33.10 >> week3/lpm.txt
+mininet> mininet> mininet> r1 ip route get 10.16.40.1 >> week3/lpm.txt
+mininet> mininet> mininet> h1 traceroute -n -I 10.16.32.10 > week3/trace-h2.txt
+mininet> mininet> mininet> h1 traceroute -n -I 10.16.33.10 > week3/trace-h3.txt
+mininet> mininet> mininet> sh cat week3/trace-h2.txt week3/trace-h3.txt
+mininet> traceroute to 10.16.32.10 (10.16.32.10), 30 hops max, 60 byte packets
+ 1  10.16.1.1  0.015 ms  0.003 ms  0.003 ms
+ 2  10.16.12.2  0.115 ms  0.008 ms  0.004 ms
+ 3  10.16.32.10  0.007 ms  0.003 ms  0.004 ms
+traceroute to 10.16.33.10 (10.16.33.10), 30 hops max, 60 byte packets
+ 1  10.16.1.1  0.011 ms  0.003 ms  0.003 ms
+ 2  10.16.13.2  0.009 ms  0.003 ms  0.004 ms
+ 3  10.16.12.2  0.006 ms  0.004 ms  0.004 ms
+ 4  10.16.33.10  0.006 ms  0.004 ms  0.005 ms
+mininet> mininet> r1 ip route del 10.16.32.0/24
+mininet> mininet> mininet> h1 traceroute -n -I 10.16.32.10 > week3/trace-h2-fallback.txt
+mininet> mininet> mininet> sh cat week3/trace-h2-fallback.txt
+mininet> traceroute to 10.16.32.10 (10.16.32.10), 30 hops max, 60 byte packets
+ 1  10.16.1.1  0.011 ms  0.003 ms  0.003 ms
+ 2  10.16.13.2  0.005 ms  0.003 ms  0.004 ms
+ 3  10.16.12.2  0.006 ms  0.004 ms  0.003 ms
+ 4  10.16.32.10  0.005 ms  0.004 ms  0.004 ms
+mininet> mininet> r3 ip route del 10.16.32.0/20
+mininet> mininet> mininet> h1 traceroute -n -I 10.16.32.10 > week3/trace-h2-unreachable.txt
+mininet> mininet> mininet> sh cat week3/trace-h2-unreachable.txt
+mininet> traceroute to 10.16.32.10 (10.16.32.10), 30 hops max, 60 byte packets
+ 1  10.16.1.1  0.011 ms  0.003 ms  0.003 ms
+ 2  10.16.13.2  0.006 ms !N  0.003 ms !N  0.004 ms !N
+mininet> mininet> r3 ip route add 10.16.32.0/20 via 10.16.13.1
+mininet> mininet> mininet> h1 ping -c 2 10.16.32.10
+mininet> PING 10.16.32.10 (10.16.32.10) 56(84) bytes of data.
+From 10.16.13.2 icmp_seq=1 Time to live exceeded
+From 10.16.13.2 icmp_seq=2 Time to live exceeded
+
+--- 10.16.32.10 ping statistics ---
+2 packets transmitted, 0 received, +2 errors, 100% packet loss, time 1036ms
+
+mininet> mininet> h1 traceroute -n -I -m 8 10.16.32.10 > week3/trace-loop.txt
+mininet> mininet> mininet> sh cat week3/trace-loop.txt
+mininet> traceroute to 10.16.32.10 (10.16.32.10), 8 hops max, 60 byte packets
+ 1  10.16.1.1  0.019 ms  0.003 ms  0.003 ms
+ 2  10.16.13.2  0.006 ms  0.004 ms  0.003 ms
+ 3  10.16.1.1  0.004 ms  0.003 ms  0.003 ms
+ 4  10.16.13.2  0.005 ms  0.005 ms  0.004 ms
+ 5  10.16.1.1  0.005 ms  0.005 ms  0.005 ms
+ 6  10.16.13.2  0.006 ms  0.008 ms  0.007 ms
+ 7  10.16.1.1  0.007 ms  0.007 ms  0.006 ms
+ 8  10.16.13.2  0.007 ms  0.007 ms  0.008 ms
+mininet> mininet> r1 sysctl -w net.ipv6.conf.all.forwarding=1
+mininet> net.ipv6.conf.all.forwarding = 1
+mininet> mininet> r2 sysctl -w net.ipv6.conf.all.forwarding=1
+mininet> net.ipv6.conf.all.forwarding = 1
+mininet> mininet> r3 sysctl -w net.ipv6.conf.all.forwarding=1
+mininet> net.ipv6.conf.all.forwarding = 1
+mininet> mininet> r1 ip -6 route add fd00:5016:32::/64 via fd00:5016:12::2
+mininet> mininet> mininet> r1 ip -6 route add fd00:5016:30::/44 via fd00:5016:13::2
+mininet> mininet> mininet> r3 ip -6 route add fd00:5016:30::/44 via fd00:5016:23::2
+mininet> mininet> mininet> r3 ip -6 route add fd00:5016:1::/64 via fd00:5016:13::1
+mininet> mininet> mininet> r2 ip -6 route add fd00:5016:1::/64 via fd00:5016:12::1
+mininet> mininet> mininet> h1 ping -6 -c 3 fd00:5016:32::10
+mininet> PING fd00:5016:32::10 (fd00:5016:32::10) 56 data bytes
+64 bytes from fd00:5016:32::10: icmp_seq=1 ttl=62 time=0.113 ms
+64 bytes from fd00:5016:32::10: icmp_seq=2 ttl=62 time=0.059 ms
+64 bytes from fd00:5016:32::10: icmp_seq=3 ttl=62 time=0.075 ms
+
+--- fd00:5016:32::10 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2086ms
+rtt min/avg/max/mdev = 0.059/0.082/0.113/0.022 ms
+mininet> mininet> h1 ping -6 -c 3 fd00:5016:33::10
+mininet> PING fd00:5016:33::10 (fd00:5016:33::10) 56 data bytes
+64 bytes from fd00:5016:33::10: icmp_seq=1 ttl=62 time=0.103 ms
+64 bytes from fd00:5016:33::10: icmp_seq=2 ttl=62 time=0.054 ms
+64 bytes from fd00:5016:33::10: icmp_seq=3 ttl=62 time=0.080 ms
+
+--- fd00:5016:33::10 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2045ms
+rtt min/avg/max/mdev = 0.054/0.079/0.103/0.020 ms
+mininet> mininet> r1 ip -6 route get fd00:5016:32::10 > week3/lpm-ipv6.txt
+mininet> mininet> mininet> r1 ip -6 route get fd00:5016:33::10 >> week3/lpm-ipv6.txt
+mininet> mininet> mininet> r1 ip -6 route get fd00:5016:3f::1 >> week3/lpm-ipv6.txt
+mininet> mininet> mininet> h1 traceroute -6 -n -I fd00:5016:33::10 > week3/trace-h3-ipv6.txt
+mininet> mininet> mininet> sh cat week3/lpm-ipv6.txt week3/trace-h3-ipv6.txt
+mininet> fd00:5016:32::10 from :: via fd00:5016:12::2 dev r1-eth1 src fd00:5016:12::1 metric 1024 pref medium
+fd00:5016:33::10 from :: via fd00:5016:13::2 dev r1-eth2 src fd00:5016:13::1 metric 1024 pref medium
+fd00:5016:3f::1 from :: via fd00:5016:13::2 dev r1-eth2 src fd00:5016:13::1 metric 1024 pref medium
+traceroute to fd00:5016:33::10 (fd00:5016:33::10), 30 hops max, 80 byte packets
+ 1  fd00:5016:1::1  0.030 ms  0.005 ms  0.003 ms
+ 2  fd00:5016:13::2  0.045 ms  0.005 ms  0.005 ms
+ 3  fd00:5016:23::2  0.013 ms  0.006 ms  0.006 ms
+ 4  fd00:5016:33::10  0.009 ms  0.006 ms  0.005 ms
+mininet> *** Stopping 0 controllers
+
+*** Stopping 6 links
+......
+*** Stopping 0 switches
+
+*** Stopping 6 hosts
+r1 r2 r3 h1 h2 h3 
+*** Done
