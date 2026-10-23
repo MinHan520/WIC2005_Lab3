@@ -20,7 +20,7 @@ import sys
 
 import yaml
 
-from build_routed import check_paths, check_spec, hosts, load, plan
+from build_routed import check_paths, check_spec, hosts, load, owner, plan
 
 EVIDENCE = [
     ("routes", "evidence3/routes.txt", "Every router's routing table: ip route"),
@@ -28,6 +28,7 @@ EVIDENCE = [
     ("summary", "evidence3/summary.txt", "Your summary route at work: ip route get"),
     ("failure", "evidence3/failure.txt", "A link goes down: what static routes do"),
     ("check", "evidence3/check.txt", "check_paths() stopping a loop and a missing route"),
+    ("pingall", "evidence3/pingall.txt", "Every host reaches every other: ping"),
 ]
 
 
@@ -52,7 +53,7 @@ def links_section(spec):
 
 
 def routing_tables_section(spec):
-    """TODO (assignment): return HTML showing each router's routing table, as the router sees it.
+    """Return HTML showing each router's routing table, as the router sees it.
 
     For each router in spec["routers"], list:
       - its directly connected networks: plan(spec)[router] gives its interfaces;
@@ -65,7 +66,35 @@ def routing_tables_section(spec):
         <tr><td>10.7.12.0/30</td><td>directly connected</td></tr> ...</table>
     Use esc() on every value.
     """
-    return "<p>TODO: show each router's routing table.</p>"
+    lans = [(lan["name"], ipaddress.ip_network(lan["network"])) for lan in spec["lans"]]
+    links = {ipaddress.ip_network(n): f"link {a}–{b}" for a, b, n in spec["links"]}
+
+    def reaches(destination):
+        """Which LANs (or which link) an entry is for: a summary covers more than one LAN."""
+        if destination in links:
+            return links[destination]
+        covered = [name for name, net in lans if net.subnet_of(destination)]
+        if len(covered) > 1:
+            return "summary: " + ", ".join(covered)
+        return ", ".join(covered)
+
+    parts = []
+    for router in spec["routers"]:
+        entries = [(i.network, "directly connected") for i in plan(spec)[router]]
+        for r in (spec.get("routes") or {}).get(router) or []:
+            via = ipaddress.ip_address(r["via"])
+            entries.append((ipaddress.ip_network(r["to"]), f"{via} ({owner(spec, via)})"))
+        # Longest prefix first: the order longest-prefix match prefers them.
+        entries.sort(key=lambda e: (-e[0].prefixlen, e[0].network_address))
+        rows = "".join(
+            f"<tr><td><code>{esc(dest)}</code></td><td>{esc(hop)}</td><td>{esc(reaches(dest))}</td></tr>"
+            for dest, hop in entries
+        )
+        parts.append(
+            f'<h3>{esc(router)}</h3><table id="table-{esc(router)}"><thead><tr><th>Destination</th>'
+            f"<th>Next hop</th><th>Reaches</th></tr></thead><tbody>{rows}</tbody></table>"
+        )
+    return "\n".join(parts)
 
 
 def mermaid_diagram(spec):
