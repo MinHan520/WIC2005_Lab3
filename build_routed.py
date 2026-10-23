@@ -140,7 +140,7 @@ def check_spec(spec):
 
 
 def check_paths(spec):
-    """TODO (assignment): the same job as check_paths() in routers.py, for any network.
+    """The same job as check_paths() in routers.py, for any network.
 
     For every pair of different hosts, follow the packet from the source host's router,
     using lookup(spec, router, destination) at each router and owner(spec, next_hop) to move
@@ -151,7 +151,29 @@ def check_paths(spec):
     find hosts, routers and next hops changes.
     """
     problems = []
-    # TODO: your code here
+    routers = set(spec["routers"])
+    for src, (_, first) in hosts(spec).items():
+        for dst, (destination, _) in hosts(spec).items():
+            if src == dst:
+                continue
+            router = first
+            path = [router]
+            while True:
+                action, next_hop = lookup(spec, router, destination)
+                if action == "connected":
+                    break
+                if action == "none":
+                    problems.append(f"{src} to {dst}: {router} has no route to {destination}")
+                    break
+                router = owner(spec, next_hop)
+                if router not in routers:
+                    # A host (or nobody) at the next hop won't forward the packet any further.
+                    problems.append(f"{src} to {dst}: {path[-1]}'s next hop {next_hop} isn't a router")
+                    break
+                if router in path:
+                    problems.append(f"{src} to {dst}: loop {' -> '.join(path + [router])}")
+                    break
+                path.append(router)
     return problems
 
 
