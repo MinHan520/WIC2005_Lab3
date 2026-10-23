@@ -1,0 +1,25 @@
+== every host pings every other host
+--- 10.16.2.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1031ms
+--- 10.16.48.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1015ms
+--- 10.16.52.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1020ms
+--- 10.16.1.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1017ms
+--- 10.16.48.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1017ms
+--- 10.16.52.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1021ms
+--- 10.16.1.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1063ms
+--- 10.16.2.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1019ms
+--- 10.16.52.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1011ms
+--- 10.16.1.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1015ms
+--- 10.16.2.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1018ms
+--- 10.16.48.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1019ms

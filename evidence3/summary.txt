@@ -1,0 +1,10 @@
+== r1 uses its summary 10.16.48.0/20 for both lab LANs (h3, h4)
+10.16.48.10 via 10.16.100.13 dev r1-eth2 src 10.16.100.14 uid 0 
+    cache 
+10.16.52.10 via 10.16.100.13 dev r1-eth2 src 10.16.100.14 uid 0 
+    cache 
+== r4 uses its summary 10.16.0.0/22 for both office LANs (h1, h2)
+10.16.1.10 via 10.16.100.14 dev r4-eth2 src 10.16.100.13 uid 0 
+    cache 
+10.16.2.10 via 10.16.100.14 dev r4-eth2 src 10.16.100.13 uid 0 
+    cache 

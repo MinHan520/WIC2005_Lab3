@@ -1,0 +1,183 @@
+*** Error setting resource limits. Mininet's performance may be affected.
+*** Configuring hosts
+r1 r2 r3 r4 h1 h2 h3 h4 
+*** Starting controller
+
+*** Starting 0 switches
+
+*** Starting CLI:
+Applying routes:
+  r1 ip route add 10.16.2.0/24 via 10.16.100.2
+  r1 ip route add 10.16.48.0/20 via 10.16.100.13
+  r2 ip route add 10.16.1.0/24 via 10.16.100.1
+  r2 ip route add 10.16.48.0/20 via 10.16.100.6
+  r3 ip route add 10.16.52.0/24 via 10.16.100.10
+  r3 ip route add 10.16.0.0/22 via 10.16.100.5
+  r4 ip route add 10.16.48.0/24 via 10.16.100.9
+  r4 ip route add 10.16.0.0/22 via 10.16.100.14
+
+Hosts: h1 10.16.1.10 (via r1), h2 10.16.2.10 (via r2), h3 10.16.48.10 (via r3), h4 10.16.52.10 (via r4) 
+
+mininet> mininet> sh echo "== r1" > evidence3/routes.txt
+mininet> mininet> mininet> r1 ip route >> evidence3/routes.txt
+mininet> mininet> mininet> sh echo "== r2" >> evidence3/routes.txt
+mininet> mininet> mininet> r2 ip route >> evidence3/routes.txt
+mininet> mininet> mininet> sh echo "== r3" >> evidence3/routes.txt
+mininet> mininet> mininet> r3 ip route >> evidence3/routes.txt
+mininet> mininet> mininet> sh echo "== r4" >> evidence3/routes.txt
+mininet> mininet> mininet> r4 ip route >> evidence3/routes.txt
+mininet> mininet> mininet> sh cat evidence3/routes.txt
+mininet> == r1
+10.16.1.0/24 dev r1-eth0 proto kernel scope link src 10.16.1.1 
+10.16.2.0/24 via 10.16.100.2 dev r1-eth1 
+10.16.48.0/20 via 10.16.100.13 dev r1-eth2 
+10.16.100.0/30 dev r1-eth1 proto kernel scope link src 10.16.100.1 
+10.16.100.12/30 dev r1-eth2 proto kernel scope link src 10.16.100.14 
+== r2
+10.16.1.0/24 via 10.16.100.1 dev r2-eth1 
+10.16.2.0/24 dev r2-eth0 proto kernel scope link src 10.16.2.1 
+10.16.48.0/20 via 10.16.100.6 dev r2-eth2 
+10.16.100.0/30 dev r2-eth1 proto kernel scope link src 10.16.100.2 
+10.16.100.4/30 dev r2-eth2 proto kernel scope link src 10.16.100.5 
+== r3
+10.16.0.0/22 via 10.16.100.5 dev r3-eth1 
+10.16.48.0/24 dev r3-eth0 proto kernel scope link src 10.16.48.1 
+10.16.52.0/24 via 10.16.100.10 dev r3-eth2 
+10.16.100.4/30 dev r3-eth1 proto kernel scope link src 10.16.100.6 
+10.16.100.8/30 dev r3-eth2 proto kernel scope link src 10.16.100.9 
+== r4
+10.16.0.0/22 via 10.16.100.14 dev r4-eth2 
+10.16.48.0/24 via 10.16.100.9 dev r4-eth1 
+10.16.52.0/24 dev r4-eth0 proto kernel scope link src 10.16.52.1 
+10.16.100.8/30 dev r4-eth1 proto kernel scope link src 10.16.100.10 
+10.16.100.12/30 dev r4-eth2 proto kernel scope link src 10.16.100.13 
+mininet> mininet> h1 traceroute -n -I h2 > evidence3/traces.txt
+mininet> mininet> mininet> h1 traceroute -n -I h3 >> evidence3/traces.txt
+mininet> mininet> mininet> h1 traceroute -n -I h4 >> evidence3/traces.txt
+mininet> mininet> mininet> sh cat evidence3/traces.txt
+mininet> traceroute to 10.16.2.10 (10.16.2.10), 30 hops max, 60 byte packets
+ 1  10.16.1.1  0.081 ms  0.006 ms  0.002 ms
+ 2  10.16.100.2  0.031 ms  0.005 ms  0.003 ms
+ 3  10.16.2.10  0.033 ms  0.006 ms  0.004 ms
+traceroute to 10.16.48.10 (10.16.48.10), 30 hops max, 60 byte packets
+ 1  10.16.1.1  0.016 ms  0.003 ms  0.003 ms
+ 2  10.16.100.13  0.032 ms  0.004 ms  0.003 ms
+ 3  10.16.100.6  0.035 ms  0.005 ms  0.004 ms
+ 4  10.16.48.10  0.031 ms  0.007 ms  0.004 ms
+traceroute to 10.16.52.10 (10.16.52.10), 30 hops max, 60 byte packets
+ 1  10.16.1.1  0.014 ms  0.004 ms  0.002 ms
+ 2  10.16.100.13  0.006 ms  0.004 ms  0.004 ms
+ 3  10.16.52.10  1.240 ms  0.015 ms  0.005 ms
+mininet> mininet> sh echo "== r1 uses its summary 10.16.48.0/20 for both lab LANs (h3, h4)" > evidence3/summary.txt
+mininet> mininet> mininet> r1 ip route get h3 >> evidence3/summary.txt
+mininet> mininet> mininet> r1 ip route get h4 >> evidence3/summary.txt
+mininet> mininet> mininet> sh echo "== r4 uses its summary 10.16.0.0/22 for both office LANs (h1, h2)" >> evidence3/summary.txt
+mininet> mininet> mininet> r4 ip route get h1 >> evidence3/summary.txt
+mininet> mininet> mininet> r4 ip route get h2 >> evidence3/summary.txt
+mininet> mininet> mininet> sh cat evidence3/summary.txt
+mininet> == r1 uses its summary 10.16.48.0/20 for both lab LANs (h3, h4)
+10.16.48.10 via 10.16.100.13 dev r1-eth2 src 10.16.100.14 uid 0 
+    cache 
+10.16.52.10 via 10.16.100.13 dev r1-eth2 src 10.16.100.14 uid 0 
+    cache 
+== r4 uses its summary 10.16.0.0/22 for both office LANs (h1, h2)
+10.16.1.10 via 10.16.100.14 dev r4-eth2 src 10.16.100.13 uid 0 
+    cache 
+10.16.2.10 via 10.16.100.14 dev r4-eth2 src 10.16.100.13 uid 0 
+    cache 
+mininet> mininet> sh echo "== every host pings every other host" > evidence3/pingall.txt
+mininet> mininet> mininet> h1 for d in 10.16.2.10 10.16.48.10 10.16.52.10; do ping -c 2 -W 1 $d | grep -E "^---|transmitted"; done >> evidence3/pingall.txt
+mininet> mininet> mininet> h2 for d in 10.16.1.10 10.16.48.10 10.16.52.10; do ping -c 2 -W 1 $d | grep -E "^---|transmitted"; done >> evidence3/pingall.txt
+mininet> mininet> mininet> h3 for d in 10.16.1.10 10.16.2.10 10.16.52.10; do ping -c 2 -W 1 $d | grep -E "^---|transmitted"; done >> evidence3/pingall.txt
+mininet> mininet> mininet> h4 for d in 10.16.1.10 10.16.2.10 10.16.48.10; do ping -c 2 -W 1 $d | grep -E "^---|transmitted"; done >> evidence3/pingall.txt
+mininet> mininet> mininet> sh cat evidence3/pingall.txt
+mininet> == every host pings every other host
+--- 10.16.2.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1031ms
+--- 10.16.48.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1015ms
+--- 10.16.52.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1020ms
+--- 10.16.1.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1017ms
+--- 10.16.48.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1017ms
+--- 10.16.52.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1021ms
+--- 10.16.1.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1063ms
+--- 10.16.2.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1019ms
+--- 10.16.52.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1011ms
+--- 10.16.1.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1015ms
+--- 10.16.2.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1018ms
+--- 10.16.48.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1019ms
+mininet> mininet> pingall
+mininet> *** Ping: testing ping reachability
+r1 -> r2 X r4 h1 h2 X h4 
+r2 -> r1 r3 X h1 h2 h3 X 
+r3 -> X r2 r4 X h2 h3 h4 
+r4 -> r1 X r3 h1 X h3 h4 
+h1 -> r1 r2 r3 r4 h2 h3 h4 
+h2 -> r1 r2 r3 r4 h1 h3 h4 
+h3 -> r1 r2 r3 r4 h1 h2 h4 
+h4 -> r1 r2 r3 r4 h1 h2 h3 
+*** Results: 14% dropped (48/56 received)
+mininet> mininet> link r1 r4 down
+mininet> mininet> mininet> h1 traceroute -n -I -m 5 -w 1 -q 1 h3 > evidence3/failure.txt
+mininet> mininet> mininet> r1 ip route get h3 >> evidence3/failure.txt 2>&1
+mininet> mininet> mininet> sh cat evidence3/failure.txt
+mininet> traceroute to 10.16.48.10 (10.16.48.10), 5 hops max, 60 byte packets
+ 1  10.16.1.1  0.083 ms !N
+RTNETLINK answers: Network is unreachable
+mininet> mininet> r1 ip route
+mininet> 10.16.1.0/24 dev r1-eth0 proto kernel scope link src 10.16.1.1 
+10.16.2.0/24 via 10.16.100.2 dev r1-eth1 
+10.16.100.0/30 dev r1-eth1 proto kernel scope link src 10.16.100.1 
+mininet> mininet> h1 ping -c 2 -W 1 h4
+mininet> PING 10.16.52.10 (10.16.52.10) 56(84) bytes of data.
+From 10.16.1.1 icmp_seq=2 Destination Net Unreachable
+
+--- 10.16.52.10 ping statistics ---
+2 packets transmitted, 0 received, +1 errors, 100% packet loss, time 1012ms
+
+mininet> mininet> h2 ping -c 2 -W 1 h3
+mininet> PING 10.16.48.10 (10.16.48.10) 56(84) bytes of data.
+64 bytes from 10.16.48.10: icmp_seq=1 ttl=62 time=20.2 ms
+64 bytes from 10.16.48.10: icmp_seq=2 ttl=62 time=0.197 ms
+
+--- 10.16.48.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1014ms
+rtt min/avg/max/mdev = 0.197/10.212/20.227/10.015 ms
+mininet> mininet> link r1 r4 up
+mininet> mininet> mininet> r1 ip route
+mininet> 10.16.1.0/24 dev r1-eth0 proto kernel scope link src 10.16.1.1 
+10.16.2.0/24 via 10.16.100.2 dev r1-eth1 
+10.16.100.0/30 dev r1-eth1 proto kernel scope link src 10.16.100.1 
+10.16.100.12/30 dev r1-eth2 proto kernel scope link src 10.16.100.14 
+mininet> mininet> r4 ip route
+mininet> 10.16.48.0/24 via 10.16.100.9 dev r4-eth1 
+10.16.52.0/24 dev r4-eth0 proto kernel scope link src 10.16.52.1 
+10.16.100.8/30 dev r4-eth1 proto kernel scope link src 10.16.100.10 
+10.16.100.12/30 dev r4-eth2 proto kernel scope link src 10.16.100.13 
+mininet> mininet> h1 ping -c 2 -W 1 h3
+mininet> PING 10.16.48.10 (10.16.48.10) 56(84) bytes of data.
+From 10.16.1.1 icmp_seq=1 Destination Net Unreachable
+From 10.16.1.1 icmp_seq=2 Destination Net Unreachable
+
+--- 10.16.48.10 ping statistics ---
+2 packets transmitted, 0 received, +2 errors, 100% packet loss, time 1096ms
+
+mininet> *** Stopping 0 controllers
+
+*** Stopping 8 links
+........
+*** Stopping 0 switches
+
+*** Stopping 8 hosts
+r1 r2 r3 r4 h1 h2 h3 h4 
+*** Done
