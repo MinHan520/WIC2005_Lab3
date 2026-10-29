@@ -9,6 +9,6 @@ Run everything inside the course container, from this folder:
 |---|---|
 | Lab Steps 1-10 | `routers.py`, `routes.yaml`, evidence in `week3/` |
 | Assignment: my routed network | `network.yaml`, `build_routed.py`, `loop.yaml`, `missing.yaml`, evidence in `evidence3/` |
-| Assignment: the page | `make_page3.py`, `page3.yaml` → `docs/index.html` |
+| Assignment: the page | `make_page3.py`, `page3.yaml` → `docs/week3/index.html` |
 
-Published page: https://minhan520.github.io/WIC2005_Lab3/
+Published page: https://minhan520.github.io/WIC2005_Lab3/week3/
