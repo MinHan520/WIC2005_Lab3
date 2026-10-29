@@ -3,6 +3,8 @@
 Week 3 lab and assignment (student ID ending 5016: NN = 16, NNNN = 5016).
 Run everything inside the course container, from this folder:
 
+This lab is assited by AI.
+
     docker run -it --rm --privileged -v "${PWD}:/lab" -w /lab firdaussahran/netlab-mininet:1.0
 
 | What | Files |
