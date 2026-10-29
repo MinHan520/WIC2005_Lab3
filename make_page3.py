@@ -7,7 +7,7 @@ Run it inside the lab container, from your netlab folder:
 It checks network.yaml with the same checks as build_routed.py (including your check_paths()),
 so a network with a loop or a missing route never gets published, then writes
 docs/week3/index.html with your network, your evidence (evidence3/) and your answers
-(page3.yaml). GitHub Pages publishes it at https://minhan520.github.io/WIC2005_Lab3/ (its own repository)
+(page3.yaml). GitHub Pages publishes it at https://minhan520.github.io/WIC2005_Lab3/week3 (its own repository)
 
 One part was mine to write: routing_tables_section().
 """
@@ -215,7 +215,7 @@ def main():
                 data=json.dumps(spec, indent=2).replace("</", "<\\/"),
             )
         )
-    print("Wrote docs/index.html")
+    print("Wrote docs/week3/index.html")
 
 
 if __name__ == "__main__":
